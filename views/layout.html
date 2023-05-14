@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    {% if user and user.id%}
+    <div class="username">{{user.nick}}님 안녕하세요.</div>
+    <div id="counter" data-start="{{user.loginAt}}"></div>
+    <span>이후에 로그아웃 됩니다.</span
+    ><button onclick="restExtend()">연장</button>
+    <div class="buttons">
+      <a href="/auth/logout">로그아웃</a>
+    </div>
+    {% else%}
+    <form action="/auth/login" method="post" id="login-form">
+      <input type="email" name="email" id="email" placeholder="email" />
+      <input
+        type="password"
+        name="password"
+        id="password"
+        placeholder="password"
+      />
+      <div class="buttons">
+        <button type="submit">로그인</button>
+        <a href="/join">회원가입</a>
+      </div>
+    </form>
+    {% endif%} {% block content%} {% endblock%}
+    <script>
+      window.onload = () => {
+        if (new URL(location.href).searchParams.get("loginError")) {
+          alert(new URL(location.href).searchParams.get("loginError"));
+        }
+      };
+    </script>
+    <script src="https://unpkg.com/event-source-polyfill/src/eventsource.min.js"></script>
+    <script>
+      if (document.querySelector("#counter")) {
+        const es = new EventSource("/sse");
+        let rest = parseInt(1);
+        function restExtend() {
+          rest = rest + 1;
+        }
+        es.addEventListener("message", (e) => {
+          const counter = document.querySelector("#counter");
+          let end = new Date(counter.dataset.start);
+          end.setMinutes(end.getMinutes() + rest);
+          const server = new Date(parseInt(e.data, 10));
+          if (server > end) {
+            counter.textContent = "00:00:00";
+            location.href = "/auth/logout";
+          } else {
+            const t = end - server;
+            const secounds = ("0" + Math.floor((t / 1000) % 60)).slice(-2);
+            const minutes = ("0" + Math.floor((t / 1000 / 60) % 60)).slice(-2);
+            const hours = ("0" + Math.floor((t / 1000 / 60 / 60) % 60)).slice(
+              -2
+            );
+            counter.textContent = hours + ":" + minutes + ":" + secounds;
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
