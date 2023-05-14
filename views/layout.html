@@ -29,7 +29,8 @@
         <a href="/join">회원가입</a>
       </div>
     </form>
-    {% endif%} {% block content%} {% endblock%}
+    {% endif%}
+
     <script>
       window.onload = () => {
         if (new URL(location.href).searchParams.get("loginError")) {
@@ -37,6 +38,7 @@
         }
       };
     </script>
+    {% block content%} {% endblock%}
     <script src="https://unpkg.com/event-source-polyfill/src/eventsource.min.js"></script>
     <script>
       if (document.querySelector("#counter")) {
